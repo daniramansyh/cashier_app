@@ -12,20 +12,46 @@ class _CashierPageState extends State<CashierPage> {
     {
       "name": "Coklat Susu",
       "price": 10000,
-      "image": "assets/images/coklat_susu.jpg",
-    },
-    {
-      "name": "Permen Karet",
-      "price": 5000,
-      "image": "assets/images/permen_karet.jpg",
+      "image": "assets/images/cokelat_susu.jpg",
+      "quantity": 0,
+      "stock": 10,
     },
     {
       "name": "Kacang Goreng",
       "price": 15000,
       "image": "assets/images/kacang_goreng.jpg",
+      "quantity": 0,
+      "stock": 10,
     },
   ];
+
+  int _totalItem = 0;
+  int _totalPrice = 0;
+
+  Future<void> _TambahItemBeli(int index) async {
+    setState(() {
+      if (products[index]['stock'] > 0) {
+        products[index]['stock']--;
+        products[index]['quantity']++;
+        _totalItem++;
+        _totalPrice += products[index]['price'] as int;
+      }
+    });
+  }
+
+  Future<void> _KurangiItemBeli(int index) async {
+    setState(() {
+      if (products[index]['quantity'] > 0) {
+        products[index]['stock']++;
+        products[index]['quantity']--;
+        _totalItem--;
+        _totalPrice -= products[index]['price'] as int;
+      }
+    });
+  }
+
   final TextEditingController searchController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,7 +73,7 @@ class _CashierPageState extends State<CashierPage> {
               controller: searchController,
               decoration: InputDecoration(
                 hintText: "Cari produk....",
-                hintStyle: TextStyle(color: Colors.grey[300]),
+                hintStyle: TextStyle(color: Colors.grey[400]),
                 border: OutlineInputBorder(
                   borderSide: const BorderSide(color: Colors.black),
                   borderRadius: BorderRadius.circular(8.0),
@@ -58,12 +84,12 @@ class _CashierPageState extends State<CashierPage> {
                 ),
               ),
             ),
+            const SizedBox(height: 20),
             Expanded(
               child: ListView.separated(
-                separatorBuilder: (context, index) {
-                  return const SizedBox(height: 15);
-                },
-                itemCount: 10,
+                separatorBuilder:
+                    (context, index) => const SizedBox(height: 15),
+                itemCount: products.length,
                 itemBuilder: (context, index) {
                   return Container(
                     height: 100,
@@ -72,37 +98,84 @@ class _CashierPageState extends State<CashierPage> {
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
-                          height: 100,
-                          width: 100,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(8.0),
-                              bottomLeft: Radius.circular(8.0),
-                            ),
-                            color: Colors.grey[400],
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Coklat Susu",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w400,
+                        Row(
+                          children: [
+                            Container(
+                              height: 100,
+                              width: 100,
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: AssetImage(products[index]['image']),
+                                  fit: BoxFit.cover,
                                 ),
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(8.0),
+                                  bottomLeft: Radius.circular(8.0),
+                                ),
+                                color: Colors.grey[400],
                               ),
+                            ),
+                            const SizedBox(width: 10),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "${products[index]['name']}",
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    "Rp ${products[index]['price']}",
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                  Text(
+                                    "Stock: ${products[index]['stock']}",
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: Row(
+                            children: [
+                              if (products[index]['quantity'] > 0)
+                                GestureDetector(
+                                  onTap: () => _KurangiItemBeli(index),
+                                  child: Icon(
+                                    Icons.remove_circle_outline_rounded,
+                                    color: Colors.red[400],
+                                    size: 30,
+                                  ),
+                                ),
+                              const SizedBox(width: 10),
                               Text(
-                                "Rp. 10.000",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w400,
+                                "${products[index]['quantity']}",
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                              const SizedBox(width: 10),
+                              GestureDetector(
+                                onTap: () => _TambahItemBeli(index),
+                                child: Icon(
+                                  Icons.add_circle_outline_rounded,
+                                  color: Colors.green[400],
+                                  size: 30,
                                 ),
                               ),
                             ],
@@ -114,6 +187,31 @@ class _CashierPageState extends State<CashierPage> {
                 },
               ),
             ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Total Item: $_totalItem",
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  Text(
+                    "Total Harga: Rp $_totalPrice",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 30),
           ],
         ),
       ),
